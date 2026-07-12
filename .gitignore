@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Generated outputs
+outputs/
+*.log
+
+# Large assets and private files
+models/
+data/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.parquet
+*.zip
+
+# Credentials / keys
+.ssh/
+*.pem
+id_rsa*
+id_ed25519*
+authorized_keys
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

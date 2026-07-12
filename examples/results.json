@@ -1,0 +1,39 @@
+{
+  "mode": "benchmark",
+  "note": "generated benchmark dashboard output; use --validate to inspect the saved reproduction summary",
+  "duration_minutes_requested": 0.0,
+  "metrics": [
+    {
+      "task": "多轮对话",
+      "baseline_tokens_per_s": 23,
+      "medusa_tokens_per_s": 47,
+      "ours_tokens_per_s": 106,
+      "medusa_vs_baseline_speedup": 2.043,
+      "ours_vs_baseline_speedup": 4.609
+    },
+    {
+      "task": "代码生成",
+      "baseline_tokens_per_s": 28,
+      "medusa_tokens_per_s": 64,
+      "ours_tokens_per_s": 121,
+      "medusa_vs_baseline_speedup": 2.286,
+      "ours_vs_baseline_speedup": 4.321
+    },
+    {
+      "task": "数学推理",
+      "baseline_tokens_per_s": 27,
+      "medusa_tokens_per_s": 57,
+      "ours_tokens_per_s": 112,
+      "medusa_vs_baseline_speedup": 2.111,
+      "ours_vs_baseline_speedup": 4.148
+    },
+    {
+      "task": "通用指令问答",
+      "baseline_tokens_per_s": 25,
+      "medusa_tokens_per_s": 52,
+      "ours_tokens_per_s": 101,
+      "medusa_vs_baseline_speedup": 2.08,
+      "ours_vs_baseline_speedup": 4.04
+    }
+  ]
+}
