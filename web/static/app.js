@@ -7,6 +7,7 @@ const ui = {
   dropZone: document.querySelector("#dropZone"),
   dropTitle: document.querySelector("#dropTitle"),
   dropMeta: document.querySelector("#dropMeta"),
+  sampleButton: document.querySelector("#sampleButton"),
   videoPreview: document.querySelector("#videoPreview"),
   videoEmpty: document.querySelector("#videoEmpty"),
   duration: document.querySelector("#duration"),
@@ -122,9 +123,27 @@ function selectFile(file) {
   if (previewUrl) URL.revokeObjectURL(previewUrl);
   previewUrl = URL.createObjectURL(file);
   ui.videoPreview.src = previewUrl;
+  ui.videoPreview.load();
   ui.videoPreview.hidden = false;
   ui.videoEmpty.hidden = true;
   ui.startButton.disabled = !connectionReady || Boolean(currentJobId);
+}
+
+async function loadSampleVideo() {
+  ui.sampleButton.disabled = true;
+  try {
+    const response = await fetch("/sample-video");
+    if (!response.ok) throw new Error("示例视频尚未安装");
+    const blob = await response.blob();
+    selectFile(new File([blob], "vispec_sample_video.mp4", { type: "video/mp4" }));
+    ui.videoPreview.src = "/sample-video";
+    ui.videoPreview.load();
+    showToast("示例视频已载入");
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    ui.sampleButton.disabled = false;
+  }
 }
 
 function setProgress(value, message) {
@@ -275,6 +294,7 @@ async function validateHistory() {
 }
 
 ui.videoInput.addEventListener("change", () => selectFile(ui.videoInput.files[0]));
+ui.sampleButton.addEventListener("click", loadSampleVideo);
 ui.dropZone.addEventListener("dragover", (event) => { event.preventDefault(); ui.dropZone.classList.add("dragging"); });
 ui.dropZone.addEventListener("dragleave", () => ui.dropZone.classList.remove("dragging"));
 ui.dropZone.addEventListener("drop", (event) => {

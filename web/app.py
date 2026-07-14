@@ -50,6 +50,8 @@ app.mount("/static", StaticFiles(directory=STATIC_ROOT), name="static")
 
 jobs = {}
 jobs_lock = threading.Lock()
+connection_lock = threading.Lock()
+connection_cache = {"checked_at": 0.0, "value": None}
 
 
 def now_iso():
@@ -115,34 +117,44 @@ def run_capture(command, timeout=30):
 
 
 def connection_status():
-    if not SSH_KEY.is_file():
-        return {
-            "connected": False,
-            "message": f"SSH key not found: {SSH_KEY}",
-        }
-    try:
-        result = run_capture(
-            ssh_base()
-            + [
-                "printf 'VISPEC_READY\\n'; hostname; test -f "
-                + shlex.quote(REMOTE_SCRIPT)
-                + " && printf 'SCRIPT_READY\\n'",
-            ],
-            timeout=12,
-        )
-    except (OSError, subprocess.SubprocessError) as exc:
-        return {"connected": False, "message": str(exc)}
+    with connection_lock:
+        cached = connection_cache["value"]
+        if cached and time.time() - connection_cache["checked_at"] < 8:
+            return cached
 
-    connected = result.returncode == 0 and "VISPEC_READY" in result.stdout
-    script_ready = "SCRIPT_READY" in result.stdout
-    output = (result.stdout + result.stderr).strip()
-    if not connected and ("Connection refused" in output or "connect to host" in output):
-        output = f"Reverse tunnel is unavailable on localhost:{SSH_PORT}"
-    return {
-        "connected": connected,
-        "script_ready": script_ready,
-        "message": output or f"SSH exited with code {result.returncode}",
-    }
+        if not SSH_KEY.is_file():
+            value = {
+                "connected": False,
+                "script_ready": False,
+                "message": f"SSH key not found: {SSH_KEY}",
+            }
+        else:
+            try:
+                result = run_capture(
+                    ssh_base()
+                    + [
+                        "printf 'VISPEC_READY\\n'; hostname; test -f "
+                        + shlex.quote(REMOTE_SCRIPT)
+                        + " && printf 'SCRIPT_READY\\n'",
+                    ],
+                    timeout=35,
+                )
+                connected = result.returncode == 0 and "VISPEC_READY" in result.stdout
+                script_ready = "SCRIPT_READY" in result.stdout
+                output = (result.stdout + result.stderr).strip()
+                if not connected and ("Connection refused" in output or "connect to host" in output):
+                    output = f"Reverse tunnel is unavailable on localhost:{SSH_PORT}"
+                value = {
+                    "connected": connected,
+                    "script_ready": script_ready,
+                    "message": output or f"SSH exited with code {result.returncode}",
+                }
+            except (OSError, subprocess.SubprocessError) as exc:
+                value = {"connected": False, "script_ready": False, "message": str(exc)}
+
+        connection_cache["checked_at"] = time.time()
+        connection_cache["value"] = value
+        return value
 
 
 def snapshot_job(job):
@@ -286,6 +298,14 @@ def remote_job(job_id):
 @app.get("/")
 def index():
     return FileResponse(STATIC_ROOT / "index.html")
+
+
+@app.get("/sample-video")
+def sample_video():
+    path = REPO_ROOT / "examples" / "sample_video.mp4"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Sample video is not installed")
+    return FileResponse(path, media_type="video/mp4", filename="vispec_sample_video.mp4")
 
 
 @app.get("/api/config")

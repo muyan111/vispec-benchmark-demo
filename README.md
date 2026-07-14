@@ -20,6 +20,8 @@ The quickest Windows workflow is:
 3. Select a video and click Start.
 ```
 
+For a no-file demo, click `载入示例视频`; the repository includes a short public CC0 sample MP4 with no private content.
+
 The browser opens at:
 
 ```text
@@ -40,6 +42,7 @@ server/README_SERVER.md          Server-side runbook.
 local/pull_results.ps1           Pulls generated PNG/JSON/log back to Windows through the SSH tunnel.
 local/install_console.ps1        Creates the local web environment.
 local/start_console.ps1          Starts the local browser console.
+local/deploy_to_server.ps1       Deploys through the reverse tunnel when A100 cannot reach GitHub.
 start_console.cmd                Double-click launcher for Windows.
 web/                             Local API and HTML/CSS/JS console.
 docs/                            Operation manuals and notes.
@@ -132,3 +135,13 @@ Use the previous real summary to render an alternate chart:
 ```
 
 The default benchmark dashboard remains presentation-oriented and does not require loading the full model.
+
+## Deploy Without Server-Side GitHub Access
+
+When GitHub TLS access fails inside the A100 container, keep the reverse tunnel connected and run on Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\local\deploy_to_server.ps1
+```
+
+This packages the current Git revision, uploads it through `localhost:2225`, and runs the server setup script.

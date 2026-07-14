@@ -109,6 +109,8 @@ main { max-width: 1500px; margin: 0 auto; }
   align-items: stretch;
 }
 
+.input-picker { display: grid; grid-template-rows: 1fr auto; gap: 9px; }
+
 .drop-zone {
   min-height: 244px;
   padding: 28px;
@@ -125,6 +127,17 @@ main { max-width: 1500px; margin: 0 auto; }
 .drop-kicker { color: var(--green); font-size: 11px; font-weight: 800; letter-spacing: 1.2px; }
 .drop-zone strong { font-size: 21px; }
 .drop-zone span:last-child { color: var(--muted); font-size: 12px; word-break: break-word; }
+
+.sample-button {
+  min-height: 36px;
+  border: 1px solid #8fa09b;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 700;
+}
+.sample-button:hover { border-color: var(--green); background: #f0f8f4; }
 
 .video-stage {
   min-height: 244px;

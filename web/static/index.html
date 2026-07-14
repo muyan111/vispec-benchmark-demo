@@ -31,15 +31,18 @@
       </div>
 
       <div class="input-grid">
-        <label id="dropZone" class="drop-zone" for="videoInput">
-          <input id="videoInput" type="file" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,video/x-msvideo" hidden>
-          <span class="drop-kicker">VIDEO INPUT</span>
-          <strong id="dropTitle">选择或拖入待跑视频</strong>
-          <span id="dropMeta">MP4 / MOV / MKV / WEBM / AVI</span>
-        </label>
+        <div class="input-picker">
+          <label id="dropZone" class="drop-zone" for="videoInput">
+            <input id="videoInput" type="file" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,video/x-msvideo" hidden>
+            <span class="drop-kicker">VIDEO INPUT</span>
+            <strong id="dropTitle">选择或拖入待跑视频</strong>
+            <span id="dropMeta">MP4 / MOV / MKV / WEBM / AVI</span>
+          </label>
+          <button id="sampleButton" class="sample-button" type="button">载入示例视频</button>
+        </div>
 
         <div class="video-stage">
-          <video id="videoPreview" controls playsinline hidden></video>
+          <video id="videoPreview" controls playsinline preload="metadata" hidden></video>
           <div id="videoEmpty" class="video-empty">等待视频</div>
         </div>
 

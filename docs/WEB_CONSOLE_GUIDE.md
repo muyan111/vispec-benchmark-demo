@@ -79,6 +79,14 @@ git pull
 bash server/setup_server.sh
 ```
 
+如果 A100 访问 GitHub 出现 `GnuTLS recv error`，不要反复重试。保持反向隧道已连接，在 Windows 仓库目录执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\local\deploy_to_server.ps1
+```
+
+该脚本会从 Windows 通过 `localhost:2225` 上传当前 Git 版本并执行服务器安装。
+
 `setup_server.sh` 会安装服务器端最小依赖，并把最新运行脚本复制到：
 
 ```text
@@ -210,6 +218,7 @@ powershell -ExecutionPolicy Bypass -File .\local\start_console.ps1
 
 1. 顶部连接状态显示 `A100 已连接`。
 2. 选择或拖入视频，页面会先在本地预览。
+   没有现成视频时可点击 `载入示例视频`，仓库内置的是无隐私内容的公开 CC0 示例 MP4。
 3. 设置运行时长。正式演示默认 8 分钟；联调可填 `0.05`。
 4. 选择 `演示数据` 或 `历史实测`。
 5. 点击 `开始实验`。
