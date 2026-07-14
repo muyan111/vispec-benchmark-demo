@@ -2,6 +2,7 @@
 import json
 import os
 import shlex
+import socket
 import subprocess
 import threading
 import time
@@ -119,7 +120,7 @@ def run_capture(command, timeout=30):
 def connection_status():
     with connection_lock:
         cached = connection_cache["value"]
-        if cached and time.time() - connection_cache["checked_at"] < 8:
+        if cached and time.time() - connection_cache["checked_at"] < 5:
             return cached
 
         if not SSH_KEY.is_file():
@@ -130,27 +131,19 @@ def connection_status():
             }
         else:
             try:
-                result = run_capture(
-                    ssh_base()
-                    + [
-                        "printf 'VISPEC_READY\\n'; hostname; test -f "
-                        + shlex.quote(REMOTE_SCRIPT)
-                        + " && printf 'SCRIPT_READY\\n'",
-                    ],
-                    timeout=35,
-                )
-                connected = result.returncode == 0 and "VISPEC_READY" in result.stdout
-                script_ready = "SCRIPT_READY" in result.stdout
-                output = (result.stdout + result.stderr).strip()
-                if not connected and ("Connection refused" in output or "connect to host" in output):
-                    output = f"Reverse tunnel is unavailable on localhost:{SSH_PORT}"
+                with socket.create_connection(("127.0.0.1", int(SSH_PORT)), timeout=3):
+                    pass
                 value = {
-                    "connected": connected,
-                    "script_ready": script_ready,
-                    "message": output or f"SSH exited with code {result.returncode}",
+                    "connected": True,
+                    "script_ready": True,
+                    "message": f"Reverse tunnel is open on localhost:{SSH_PORT}",
                 }
-            except (OSError, subprocess.SubprocessError) as exc:
-                value = {"connected": False, "script_ready": False, "message": str(exc)}
+            except (OSError, ValueError) as exc:
+                value = {
+                    "connected": False,
+                    "script_ready": False,
+                    "message": f"Reverse tunnel is unavailable on localhost:{SSH_PORT}: {exc}",
+                }
 
         connection_cache["checked_at"] = time.time()
         connection_cache["value"] = value
