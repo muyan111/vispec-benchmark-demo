@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ViSpec 实验控制台</title>
+  <meta name="description" content="ViSpec A100 视频实验控制台">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">A100 / MULTIMODAL BENCHMARK</p>
+      <h1>ViSpec 实验控制台</h1>
+    </div>
+    <div class="connection-summary" aria-live="polite">
+      <span id="connectionDot" class="status-dot pending"></span>
+      <span id="connectionText">正在检查连接</span>
+      <button id="refreshConnection" class="icon-button" type="button" title="刷新连接" aria-label="刷新连接">↻</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="setup-band" aria-labelledby="setupTitle">
+      <div class="section-heading">
+        <span class="step-index">01</span>
+        <div>
+          <h2 id="setupTitle">实验输入</h2>
+          <p id="serverAddress">root@localhost:2225</p>
+        </div>
+      </div>
+
+      <div class="input-grid">
+        <label id="dropZone" class="drop-zone" for="videoInput">
+          <input id="videoInput" type="file" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,video/x-msvideo" hidden>
+          <span class="drop-kicker">VIDEO INPUT</span>
+          <strong id="dropTitle">选择或拖入待跑视频</strong>
+          <span id="dropMeta">MP4 / MOV / MKV / WEBM / AVI</span>
+        </label>
+
+        <div class="video-stage">
+          <video id="videoPreview" controls playsinline hidden></video>
+          <div id="videoEmpty" class="video-empty">等待视频</div>
+        </div>
+
+        <div class="run-controls">
+          <div class="field-row">
+            <label for="duration">运行时长</label>
+            <div class="number-field">
+              <input id="duration" type="number" min="0.01" max="240" step="0.1" value="8.0">
+              <span>分钟</span>
+            </div>
+          </div>
+
+          <fieldset>
+            <legend>数据模式</legend>
+            <div class="segmented">
+              <label><input type="radio" name="mode" value="demo" checked><span>演示数据</span></label>
+              <label><input type="radio" name="mode" value="real"><span>历史实测</span></label>
+            </div>
+          </fieldset>
+
+          <div class="action-row">
+            <button id="startButton" class="primary-button" type="button" disabled>开始实验</button>
+            <button id="cancelButton" class="secondary-button" type="button" disabled>中止</button>
+          </div>
+          <button id="validateButton" class="text-button" type="button">验证历史结果</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="run-band" aria-labelledby="runTitle">
+      <div class="section-heading">
+        <span class="step-index">02</span>
+        <div>
+          <h2 id="runTitle">运行状态</h2>
+          <p id="jobId">尚未创建任务</p>
+        </div>
+      </div>
+
+      <div class="progress-row">
+        <div class="progress-track" aria-label="实验进度">
+          <div id="progressBar" class="progress-bar" style="width:0%"></div>
+        </div>
+        <strong id="progressValue">0%</strong>
+        <span id="runMessage">就绪</span>
+      </div>
+
+      <pre id="logOutput" class="console" aria-live="polite">等待实验启动...</pre>
+    </section>
+
+    <section class="result-band" aria-labelledby="resultTitle">
+      <div class="section-heading">
+        <span class="step-index">03</span>
+        <div>
+          <h2 id="resultTitle">实验结果</h2>
+          <p id="resultTimestamp">结果尚未生成</p>
+        </div>
+      </div>
+
+      <div id="resultEmpty" class="result-empty">NO RESULT</div>
+      <div id="resultContent" class="result-layout" hidden>
+        <figure class="result-figure">
+          <img id="resultImage" alt="Baseline、Medusa 与 Ours 吞吐量对比图">
+          <figcaption>
+            <a id="downloadImage" href="#" download>下载结果图</a>
+            <a id="downloadJson" href="#" download>下载 JSON</a>
+            <a id="downloadLog" href="#" download>下载日志</a>
+          </figcaption>
+        </figure>
+
+        <div class="metrics-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>任务</th>
+                <th>Baseline</th>
+                <th>Medusa</th>
+                <th>Ours</th>
+                <th>加速比</th>
+              </tr>
+            </thead>
+            <tbody id="metricsBody"></tbody>
+          </table>
+          <dl id="videoFacts" class="video-facts"></dl>
+        </div>
+      </div>
+    </section>
+
+    <details class="connection-details">
+      <summary>连接参数</summary>
+      <dl id="connectionFacts"></dl>
+    </details>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

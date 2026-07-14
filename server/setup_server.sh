@@ -13,11 +13,14 @@ if [ ! -x "$PYTHON_BIN" ]; then
   exit 1
 fi
 
-"$PYTHON_BIN" -m pip install -q -r requirements.txt
+"$PYTHON_BIN" -m pip install -q -r requirements-server.txt
+cp server/run_benchmark.py "$BASE_DIR/run_benchmark.py"
+chmod 755 "$BASE_DIR/run_benchmark.py"
 
 echo "Environment ready."
 echo "Python: $PYTHON_BIN"
 echo "Output root: $BASE_DIR/outputs/benchmark_dashboard"
+echo "Runner: $BASE_DIR/run_benchmark.py"
 echo
 echo "Optional Chinese font:"
 echo "  If PNG labels show as boxes, upload simhei.ttf or msyh.ttc to $BASE_DIR/fonts/"

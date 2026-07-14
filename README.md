@@ -8,6 +8,25 @@ It is designed for presentation and operation rehearsal:
 - Prints `Baseline / Medusa / Ours` throughput in tokens/s.
 - Generates a JSON result file and a PNG dashboard.
 - Keeps manual validation hooks for reading the previous real reproduction summary.
+- Includes a local web console that uploads a video, starts the A100 run, streams logs, and displays returned results.
+
+## Web Console
+
+The quickest Windows workflow is:
+
+```text
+1. Keep CorpLink and the A100 reverse tunnel connected.
+2. Double-click start_console.cmd.
+3. Select a video and click Start.
+```
+
+The browser opens at:
+
+```text
+http://127.0.0.1:8765
+```
+
+Full connection and recovery instructions are in [docs/WEB_CONSOLE_GUIDE.md](docs/WEB_CONSOLE_GUIDE.md).
 
 Large model weights, datasets, SSH keys, and private credentials are intentionally not included.
 
@@ -16,11 +35,18 @@ Large model weights, datasets, SSH keys, and private credentials are intentional
 ```text
 server/run_benchmark.py          Main benchmark-style runner.
 server/setup_server.sh           Installs minimal Python dependencies and prepares folders.
+server/start_reverse_tunnel.sh   Restarts the A100-to-Windows reverse SSH tunnel.
 server/README_SERVER.md          Server-side runbook.
 local/pull_results.ps1           Pulls generated PNG/JSON/log back to Windows through the SSH tunnel.
+local/install_console.ps1        Creates the local web environment.
+local/start_console.ps1          Starts the local browser console.
+start_console.cmd                Double-click launcher for Windows.
+web/                             Local API and HTML/CSS/JS console.
 docs/                            Operation manuals and notes.
 examples/                        Example generated outputs.
 requirements.txt                 Minimal Python package requirements.
+requirements-server.txt          A100-only Python dependency.
+requirements-web.txt             Windows web-console dependencies.
 .gitignore                       Excludes models, data, logs, credentials, and generated caches.
 ```
 

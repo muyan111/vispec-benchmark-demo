@@ -42,6 +42,7 @@ Default 8-minute run:
 
 ```bash
 /root/miniconda3/envs/rekv/bin/python server/run_benchmark.py \
+  --video /path/to/input.mp4 \
   | tee /home/vispec_repro/outputs/benchmark_dashboard/run.log
 ```
 
@@ -49,6 +50,7 @@ Quick smoke test:
 
 ```bash
 /root/miniconda3/envs/rekv/bin/python server/run_benchmark.py \
+  --video /path/to/input.mp4 \
   --duration-minutes 0.05 \
   --output-dir /home/vispec_repro/outputs/benchmark_dashboard_smoke
 ```

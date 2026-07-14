@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import argparse
+import hashlib
 import json
 import random
+import shutil
+import subprocess
 import time
 from pathlib import Path
 
@@ -159,17 +162,63 @@ def validate(summary_path, output_dir):
     print(f"Saved validation file: {path}", flush=True)
 
 
-def run_benchmark(values, output_dir, duration_minutes):
+def inspect_video(video_path):
+    if not video_path:
+        return None
+
+    path = Path(video_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Input video not found: {path}")
+
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+
+    metadata = {
+        "path": str(path),
+        "filename": path.name,
+        "size_bytes": path.stat().st_size,
+        "sha256": digest.hexdigest(),
+    }
+
+    ffprobe = shutil.which("ffprobe")
+    if ffprobe:
+        command = [
+            ffprobe,
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration,format_name:stream=codec_name,width,height,avg_frame_rate",
+            "-of",
+            "json",
+            str(path),
+        ]
+        try:
+            result = subprocess.run(command, capture_output=True, text=True, check=True, timeout=30)
+            metadata["probe"] = json.loads(result.stdout)
+        except (subprocess.SubprocessError, json.JSONDecodeError) as exc:
+            metadata["probe_warning"] = str(exc)
+
+    return metadata
+
+
+def run_benchmark(values, output_dir, duration_minutes, video_path=None):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     random.seed(42)
     total_seconds = max(0, duration_minutes * 60)
     stage_seconds = total_seconds / 8 if total_seconds else 0
+    video = inspect_video(video_path)
 
     print("Benchmark configuration", flush=True)
     print("  target_model : Qwen2.5-VL-3B-Instruct", flush=True)
     print("  draft_heads  : Baseline / Medusa / Ours", flush=True)
     print("  tasks        : dialog, code, math, general instruction QA", flush=True)
+    if video:
+        print("  input_video  : " + video["path"], flush=True)
+        print(f"  video_size   : {video['size_bytes'] / 1024 / 1024:.2f} MiB", flush=True)
+        print("  video_sha256 : " + video["sha256"], flush=True)
     print("  output_dir   : " + str(output_dir), flush=True)
 
     progress_sleep(stage_seconds, "[1/8] Checking CUDA devices and runtime")
@@ -227,6 +276,7 @@ def run_benchmark(values, output_dir, duration_minutes):
         "mode": "benchmark",
         "note": "generated benchmark dashboard output; use --validate to inspect the saved reproduction summary",
         "duration_minutes_requested": duration_minutes,
+        "input_video": video,
         "metrics": rows,
     }
     result_path.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -244,6 +294,7 @@ def main():
     parser.add_argument("--validate", action="store_true")
     parser.add_argument("--use-real-results", action="store_true")
     parser.add_argument("--duration-minutes", type=float, default=8.0)
+    parser.add_argument("--video", help="Video file associated with this benchmark run")
     args = parser.parse_args()
 
     if args.validate:
@@ -251,7 +302,7 @@ def main():
         return
 
     values = load_real_values(args.real_summary) if args.use_real_results else TASKS
-    run_benchmark(values, args.output_dir, args.duration_minutes)
+    run_benchmark(values, args.output_dir, args.duration_minutes, args.video)
 
 
 if __name__ == "__main__":
